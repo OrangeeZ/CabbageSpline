@@ -38,11 +38,15 @@
 			#include "HermiteSpline.cginc"
 			
 			DECLARE_SPLINE(_LargeCurve)
+			DECLARE_SPLINE(_SmallCurve)
 			
 			v2f vert (appdata v)
 			{
 				v2f o;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+
+				float vertexOffset = CALCULATE_POINT(_LargeCurve, frac(_Time.y)) + CALCULATE_POINT(_SmallCurve, frac(_Time.y));
+
+				o.vertex = UnityObjectToClipPos(v.vertex + vertexOffset);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
@@ -51,7 +55,7 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = CALCULATE_POINT(_LargeCurve, frac(_Time.y));//((_Time.x) - floor(_Time.x));//CalculatePoint();
+				fixed4 col = CALCULATE_POINT(_LargeCurve, frac(_Time.y)) + CALCULATE_POINT(_SmallCurve, frac(_Time.y));
 				// apply fog
 				UNITY_APPLY_FOG(i.fogCoord, col);
 				return col;
