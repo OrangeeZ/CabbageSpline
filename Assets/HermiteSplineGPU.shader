@@ -35,68 +35,9 @@
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 
-			#define MAX_POINTS 8
-			int pointCount;
-			uniform float points[MAX_POINTS];
-			uniform float2 tangents[MAX_POINTS];
-			uniform float knotVector[MAX_POINTS];
-
-			int GetPointCount()
-			{
-				return min(MAX_POINTS, pointCount);
-			}
-
-			int CalculateSpan( float x ) 
-			{
-				x = clamp( x, 0, 1 );
-
-				int left = 0;
-				int right = GetPointCount();
-				int mid = ( left + right ) / 2;
-
-				int refc = 20;
-
-				while ( x < knotVector[mid] || x > knotVector[mid + 1] ) {
-					if ( --refc < 0 ) {
-						break;
-					}
-
-					if ( x < knotVector[mid] ) {
-						right = mid;
-					} else {
-						left = mid;
-					}
-
-					mid = ( left + right ) / 2;
-				}
-
-				return mid;
-			}
-
-			float CalculatePoint(float t)
-			{
-				int knotSpan = CalculateSpan( t );
-				float knotRange = ( knotVector[knotSpan + 1] - knotVector[knotSpan] );
-				t = ( t - knotVector[knotSpan] ) / knotRange;
-
-				float p0 = points[knotSpan];
-				float p1 = points[knotSpan + 1];
-				float t1 = tangents[knotSpan].y;
-				float t2 = tangents[knotSpan + 1].x;
-
-				float tSquared = t * t;
-				float threeTSquared = 3 * tSquared;
-				float tCubed = t * tSquared;
-
-				float h2 = -2 * tCubed + threeTSquared;
-				float h1 = -h2 + 1;
-
-				float h3 = tCubed - 2 * tSquared + t;
-				float h4 = tCubed - tSquared;
-
-				return h1 * p0 + h2 * p1 + t1 * h3 + t2 * h4;
-				//tangent = result / knotRange;
-			}
+			#include "HermiteSpline.cginc"
+			
+			DECLARE_SPLINE(_LargeCurve)
 			
 			v2f vert (appdata v)
 			{
@@ -110,7 +51,7 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = CalculatePoint(frac(_Time.y));//((_Time.x) - floor(_Time.x));//CalculatePoint();
+				fixed4 col = CALCULATE_POINT(_LargeCurve, frac(_Time.y));//((_Time.x) - floor(_Time.x));//CalculatePoint();
 				// apply fog
 				UNITY_APPLY_FOG(i.fogCoord, col);
 				return col;
