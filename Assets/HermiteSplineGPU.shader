@@ -35,17 +35,23 @@
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 
-			#define MAX_POINTS 4
+			#define MAX_POINTS 8
+			int pointCount;
 			uniform float points[MAX_POINTS];
 			uniform float2 tangents[MAX_POINTS];
 			uniform float knotVector[MAX_POINTS];
+
+			int GetPointCount()
+			{
+				return min(MAX_POINTS, pointCount);
+			}
 
 			int CalculateSpan( float x ) 
 			{
 				x = clamp( x, 0, 1 );
 
 				int left = 0;
-				int right = MAX_POINTS;
+				int right = GetPointCount();
 				int mid = ( left + right ) / 2;
 
 				int refc = 20;
@@ -67,11 +73,6 @@
 				return mid;
 			}
 
-			// int CalculateSpan(float t)
-			// {
-			// 	return floor(t * (MAX_POINTS - 1));
-			// }
-
 			float CalculatePoint(float t)
 			{
 				int knotSpan = CalculateSpan( t );
@@ -80,8 +81,8 @@
 
 				float p0 = points[knotSpan];
 				float p1 = points[knotSpan + 1];
-				float t1 = tangents[knotSpan].x;
-				float t2 = tangents[knotSpan + 1].y;
+				float t1 = tangents[knotSpan].y;
+				float t2 = tangents[knotSpan + 1].x;
 
 				float tSquared = t * t;
 				float threeTSquared = 3 * tSquared;

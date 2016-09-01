@@ -19,6 +19,7 @@ public class HermiteSplineGPU : MonoBehaviour
 		propertyBlock.SetFloatArray("points", points);
 		propertyBlock.SetVectorArray("tangents", tangents);
 		propertyBlock.SetFloatArray("knotVector", knotVector);
+        propertyBlock.SetFloat("pointCount", points.Length);
 
 		Target.SetPropertyBlock(propertyBlock);
     }
