@@ -1,15 +1,46 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Linq;
+
+[Serializable]
+public class NormalizedAnimationCurve
+{
+	[SerializeField]
+	private AnimationCurve _curve;
+
+	[SerializeField]
+	private float _amplitude;
+
+	[SerializeField]
+	private float _duration;
+
+	public Keyframe[] Keys { get { return _curve.keys; }}
+
+	public float Evaluate(float t)
+	{
+		return _curve.Evaluate(t / _duration) * _amplitude;
+	}
+
+	public float GetAmplitude()
+	{
+		return _amplitude;
+	}
+
+	public float GetDuration()
+	{
+		return _duration;
+	}
+}
 
 public class HermiteSplineGPU : MonoBehaviour
 {
     public Renderer Target;
 
-    public AnimationCurve LargeCurve;
-    public AnimationCurve SmallCurve;
+    public NormalizedAnimationCurve LargeCurve;
+    public NormalizedAnimationCurve SmallCurve;
 
-    void Start()
+	void Start()
     {
         var propertyBlock = new MaterialPropertyBlock();
 
@@ -19,9 +50,9 @@ public class HermiteSplineGPU : MonoBehaviour
 		Target.SetPropertyBlock(propertyBlock);
     }
 
-    private void SetupShaderAnimationCurve(string curveName, MaterialPropertyBlock propertyBlock, AnimationCurve curve)
+    private void SetupShaderAnimationCurve(string curveName, MaterialPropertyBlock propertyBlock, NormalizedAnimationCurve curve)
     {
-        var keys = curve.keys;
+        var keys = curve.Keys;
         var points = keys.Select(_ => _.value).ToArray();
         var tangents = keys.Select(_ => new Vector4(_.inTangent, _.outTangent)).ToArray();
 		var knotVector = keys.Select(_ => _.time).ToArray();
@@ -30,5 +61,7 @@ public class HermiteSplineGPU : MonoBehaviour
 		propertyBlock.SetVectorArray(curveName + "Tangents", tangents);
 		propertyBlock.SetFloatArray(curveName + "KnotVector", knotVector);
         propertyBlock.SetFloat(curveName + "PointCount", points.Length);
+	    propertyBlock.SetFloat(curveName + "Amplitude", curve.GetAmplitude());
+	    propertyBlock.SetFloat(curveName + "Duration", curve.GetDuration());
     }
 }

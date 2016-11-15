@@ -44,9 +44,10 @@
 			{
 				v2f o;
 
-				float vertexOffset = CALCULATE_POINT(_LargeCurve, frac(_Time.y)) + CALCULATE_POINT(_SmallCurve, frac(_Time.y));
+				float vertexOffset = CALCULATE_POINT_LOOP(_LargeCurve, LOOP_TIME(_LargeCurve, _Time.y)) + CALCULATE_POINT_LOOP(_SmallCurve, LOOP_TIME(_SmallCurve, _Time.y));
 
-				o.vertex = UnityObjectToClipPos(v.vertex + vertexOffset);
+				v.vertex.y += vertexOffset;
+				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;

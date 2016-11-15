@@ -4,9 +4,14 @@
 int splineName##PointCount; \
 uniform float splineName##Points[SPLINE_MAX_POINTS]; \
 uniform float2 splineName##Tangents[SPLINE_MAX_POINTS]; \
-uniform float splineName##KnotVector[SPLINE_MAX_POINTS];
+uniform float splineName##KnotVector[SPLINE_MAX_POINTS]; \
+uniform float splineName##Amplitude; \
+uniform float splineName##Duration;
+
+#define LOOP_TIME(splineName, t) (t % splineName##Duration)
 
 #define CALCULATE_POINT(splineName, t) SplineCalculatePoint(t, splineName##Points, splineName##Tangents, splineName##KnotVector, splineName##PointCount)
+#define CALCULATE_POINT_LOOP(splineName, t) (SplineCalculatePoint(frac(t / splineName##Duration), splineName##Points, splineName##Tangents, splineName##KnotVector, splineName##PointCount) * splineName##Amplitude)
 
 int SplineGetPointCount(int currentSplineCount)
 {
